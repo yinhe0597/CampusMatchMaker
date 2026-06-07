@@ -12,12 +12,11 @@
 
 <div align="center">
 
-**English** &nbsp;|&nbsp; **简体中文** &nbsp;|&nbsp; **繁體中文**
+[**English**](#english) &nbsp;|&nbsp; [**简体中文**](#simplified-chinese) &nbsp;|&nbsp; [**繁體中文**](#traditional-chinese)
 
 </div>
 
-<details open>
-<summary><b>🇬🇧 English</b> (click to expand)</summary>
+<a id="english"></a>
 
 ---
 
@@ -162,10 +161,9 @@ wingo/time_tag_peidui/
 |------|-------|
 | Vincentluo | yhkjsj@foxmail.com |
 
-</details>
 
-<details>
-<summary><b>🇨🇳 简体中文</b> (点击展开)</summary>
+
+<a id="simplified-chinese"></a>
 
 ---
 
@@ -310,10 +308,9 @@ wingo/time_tag_peidui/
 |------|------|
 | Vincentluo | yhkjsj@foxmail.com |
 
-</details>
 
-<details>
-<summary><b>🇭🇰 繁體中文</b> (點擊展開)</summary>
+
+<a id="traditional-chinese"></a>
 
 ---
 
@@ -458,7 +455,7 @@ wingo/time_tag_peidui/
 |------|------|
 | Vincentluo | yhkjsj@foxmail.com |
 
-</details>
+
 
 ---
 
