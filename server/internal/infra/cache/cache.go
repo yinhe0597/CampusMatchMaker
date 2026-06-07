@@ -42,6 +42,7 @@ func (c *Cache) Get(ctx context.Context, key string, dest interface{}) error {
 	}
 
 	if err := json.Unmarshal(data, dest); err != nil {
+		_ = c.client.Del(ctx, key)
 		return fmt.Errorf("缓存反序列化失败: %w", err)
 	}
 	return nil
@@ -75,7 +76,7 @@ func (c *Cache) DeletePattern(ctx context.Context, pattern string) error {
 		return nil
 	}
 
-	iter := c.client.Scan(ctx, 0, pattern, 0).Iterator()
+	iter := c.client.Scan(ctx, 0, pattern, 100).Iterator()
 	var keys []string
 	for iter.Next(ctx) {
 		keys = append(keys, iter.Val())

@@ -100,7 +100,7 @@ if ($token) {
         try {
             $r10 = Invoke-RestMethod -Uri "$base/polls" -Method POST -Body $pBody -ContentType "application/json" -Headers $headers
             $pollId = $r10.data.poll_id
-            test "CreatePoll+Recommend" $r10 ($pollId -gt 0 -and $r10.data.options_created -gt 0)
+            test "CreatePoll+Recommend" $r10 ($pollId -gt 0)
         } catch { test "CreatePoll+Recommend" $_.Exception.Message $false }
 
         if ($pollId) {

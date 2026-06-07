@@ -166,6 +166,9 @@ func (s *ClassService) JoinClass(ctx context.Context, userID, classID uint, req 
 		s.ttInheritor.InheritTimetable(ctx, userID, classID)
 	}
 
+	// 成员变更后清除班级详情缓存
+	_ = s.cache.Delete(ctx, fmt.Sprintf("class:detail:%d", classID))
+
 	return &dto.JoinClassResult{
 		ClassID:    class.ID,
 		ClassName:  class.Name,
@@ -224,7 +227,12 @@ func (s *ClassService) RemoveMember(ctx context.Context, operatorID, classID, ta
 		return appErr.ErrNoPermission
 	}
 
-	return s.classRepo.UpdateMemberStatus(ctx, classID, targetUserID, classrepo.MemberLeft)
+	if err := s.classRepo.UpdateMemberStatus(ctx, classID, targetUserID, classrepo.MemberLeft); err != nil {
+		return err
+	}
+	// 成员变更后清除班级详情缓存
+	_ = s.cache.Delete(ctx, fmt.Sprintf("class:detail:%d", classID))
+	return nil
 }
 
 // LookupClassByCode 通过邀请码查找班级基本信息

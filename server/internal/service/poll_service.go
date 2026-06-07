@@ -464,7 +464,7 @@ func (s *PollService) SubmitVote(ctx context.Context, userID, pollID uint, req *
 	}
 
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
 		defer cancel()
 		s.recalculateResults(ctx, pollID)
 		// 重算后清除结果缓存
