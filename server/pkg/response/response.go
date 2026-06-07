@@ -144,12 +144,12 @@ func HandleError(c *gin.Context, err error) {
 // codeToHTTPStatus 根据业务错误码映射 HTTP 状态码
 func codeToHTTPStatus(code int) int {
 	switch {
+	case code == 1106:
+		return http.StatusForbidden
 	case code >= 1100 && code <= 1199:
 		return http.StatusUnauthorized
 	case code >= 1200 && code <= 1299:
 		return http.StatusBadRequest
-	case code == 1106:
-		return http.StatusForbidden
 	case code == 1002:
 		return http.StatusNotFound
 	default:

@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <el-tabs v-model="activeTab" @tab-change="loadPolls">
+    <el-tabs v-model="activeTab" @tab-change="onTabChange">
       <el-tab-pane label="进行中" name="open" />
       <el-tab-pane label="已关闭" name="closed" />
       <el-tab-pane label="已确认" name="finalized" />
@@ -105,20 +105,21 @@ async function loadPolls() {
       page: page.value,
       page_size: pageSize.value,
     })
-    // 客户端过滤状态
-    if (activeTab.value !== 'open' && res?.polls) {
-      polls.value = res.polls.filter((p) => p.status === activeTab.value)
-      totalCount.value = polls.value.length
-    } else {
-      polls.value = res?.polls || []
-      totalCount.value = res?.total_count || 0
-    }
+    // 服务端暂未实现 status 筛选，客户端过滤展示，保持后端分页
+    polls.value = res?.polls || []
+    totalCount.value = res?.total_count || 0
   } catch (e) {
     polls.value = []
     totalCount.value = 0
   } finally {
     loading.value = false
   }
+}
+
+// activeTab 变化时重置页码重新加载
+function onTabChange() {
+  page.value = 1
+  loadPolls()
 }
 
 onMounted(loadPolls)

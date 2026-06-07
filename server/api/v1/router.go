@@ -58,7 +58,6 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config, log *zap.Logger, db *gorm
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
-			auth.POST("/refresh-token", authHandler.RefreshToken)
 		}
 
 		// 需要 JWT 认证的路由
@@ -66,6 +65,7 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config, log *zap.Logger, db *gorm
 		authorized.Use(middleware.JWTAuth(cfg.JWT))
 		{
 			authorized.GET("/auth/me", authHandler.GetCurrentUser)
+			authorized.POST("/auth/refresh-token", authHandler.RefreshToken)
 
 			// 班级模块路由
 			classes := authorized.Group("/classes")

@@ -2,15 +2,12 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 // CORS 跨域中间件
 func CORS(origins []string) gin.HandlerFunc {
-	allowOrigins := strings.Join(origins, ",")
-
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 
@@ -27,8 +24,6 @@ func CORS(origins []string) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", origin)
 		} else if len(origins) > 0 && origins[0] == "*" {
 			c.Header("Access-Control-Allow-Origin", "*")
-		} else {
-			c.Header("Access-Control-Allow-Origin", allowOrigins)
 		}
 
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -36,6 +31,12 @@ func CORS(origins []string) gin.HandlerFunc {
 		c.Header("Access-Control-Expose-Headers", "Content-Length")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Max-Age", "86400")
+
+		// wildcard 与 credentials 不能共存
+		isWildcard := len(origins) > 0 && origins[0] == "*"
+		if isWildcard && origin == "" {
+			c.Header("Access-Control-Allow-Credentials", "false")
+		}
 
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)

@@ -116,16 +116,17 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { usePollStore } from '@/stores/poll'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
 const router = useRouter()
 const pollStore = usePollStore()
-const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+const userStore = useUserStore()
 
 const poll = ref(null)
 const loading = ref(false)
 
-const isCreator = computed(() => poll.value?.creator_user_id === currentUser.user_id)
+const isCreator = computed(() => poll.value?.creator_user_id === userStore.userInfo?.id)
 
 const statusType = computed(() => {
   const map = { draft: 'info', open: 'success', closed: 'warning', finalized: 'primary' }

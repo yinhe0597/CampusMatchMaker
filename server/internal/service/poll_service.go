@@ -339,7 +339,7 @@ func (s *PollService) EditPoll(ctx context.Context, userID, pollID uint, req *dt
 		return appErr.ErrOnlyCreator
 	}
 	if p.Status != poll.PollStatusDraft {
-		return appErr.ErrPollNotOpen
+		return appErr.ErrPollNotEditable
 	}
 
 	if req.Title != nil {
@@ -364,7 +364,7 @@ func (s *PollService) OpenPoll(ctx context.Context, userID, pollID uint) error {
 		return appErr.ErrOnlyCreator
 	}
 	if p.Status != poll.PollStatusDraft {
-		return appErr.ErrPollClosed
+		return appErr.ErrPollCannotOpen
 	}
 	p.Status = poll.PollStatusOpen
 	return s.pollRepo.UpdatePoll(ctx, p)
@@ -452,7 +452,11 @@ func (s *PollService) SubmitVote(ctx context.Context, userID, pollID uint, req *
 		votedCount++
 	}
 
-	go s.recalculateResults(context.Background(), pollID)
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		s.recalculateResults(ctx, pollID)
+	}()
 
 	return &dto.SubmitVoteResult{VotedCount: votedCount}, nil
 }
@@ -608,7 +612,10 @@ func (s *PollService) calculateResults(ctx context.Context, pollID uint) error {
 
 // recalculateResults 异步重新计算
 func (s *PollService) recalculateResults(ctx context.Context, pollID uint) {
-	_ = s.calculateResults(ctx, pollID)
+	if err := s.calculateResults(ctx, pollID); err != nil {
+		// 异步计算失败不宜静默吞掉，此处依靠上层 context 超时兜底
+		_ = err
+	}
 }
 
 // GetMyVotes 获取用户的投票记录

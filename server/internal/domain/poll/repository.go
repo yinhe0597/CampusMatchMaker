@@ -160,7 +160,17 @@ func (r *pollRepository) CountVotersByPoll(ctx context.Context, pollID uint) (in
 
 func (r *pollRepository) UpsertResult(ctx context.Context, result *PollResult) error {
 	result.CalculatedAt = time.Now()
-	return r.db.WithContext(ctx).Save(result).Error
+	return r.db.WithContext(ctx).
+		Where("poll_id = ? AND option_id = ?", result.PollID, result.OptionID).
+		Assign(map[string]interface{}{
+			"yes_count":          result.YesCount,
+			"no_count":           result.NoCount,
+			"maybe_count":        result.MaybeCount,
+			"total_votes":        result.TotalVotes,
+			"participation_rate": result.ParticipationRate,
+			"calculated_at":      result.CalculatedAt,
+		}).
+		FirstOrCreate(result).Error
 }
 
 func (r *pollRepository) GetResultsByPoll(ctx context.Context, pollID uint) ([]*PollResult, error) {

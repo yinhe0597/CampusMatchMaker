@@ -63,6 +63,12 @@ func (s *TimetableService) CreateClassTimetable(ctx context.Context, userID, cla
 		return nil, appErr.Wrap(1000, "录入课表失败", err)
 	}
 
+	// 更新班级课表状态，触发新成员自动继承
+	if class, err := s.classRepo.GetClassByID(ctx, classID); err == nil {
+		class.TimetableStatus = 1
+		_ = s.classRepo.UpdateClass(ctx, class)
+	}
+
 	return &dto.CreateClassTimetableResult{
 		CreatedCount:    created,
 		TimetableStatus: 1,
