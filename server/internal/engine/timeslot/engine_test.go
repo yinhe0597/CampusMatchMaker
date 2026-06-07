@@ -1,6 +1,7 @@
 package timeslot
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -373,4 +374,46 @@ func TestCalculateFreeSlots_CustomGranularity(t *testing.T) {
 		t.Error("应有空闲时段")
 	}
 	t.Logf("60分钟粒度结果数: %d", len(results))
+}
+
+// ===== 性能基准测试 =====
+
+// BenchmarkCalculateFreeSlots_30Users 30人课表引擎性能
+func BenchmarkCalculateFreeSlots_30Users(b *testing.B) {
+	schedules := make([]UserSchedule, 30)
+	for i := 0; i < 30; i++ {
+		schedules[i] = UserSchedule{
+			UserID: fmt.Sprintf("u%d", i),
+			Slots: []OccupiedSlot{
+				{DayOfWeek: 1, StartMinutes: 480, EndMinutes: 575},
+				{DayOfWeek: 3, StartMinutes: 595, EndMinutes: 690},
+			},
+		}
+	}
+	cfg := DefaultConfig()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		results := CalculateFreeSlots(schedules, cfg)
+		_ = FillTotalCount(results, len(schedules))
+	}
+}
+
+// BenchmarkCalculateFreeSlots_100Users 100人课表引擎性能
+func BenchmarkCalculateFreeSlots_100Users(b *testing.B) {
+	schedules := make([]UserSchedule, 100)
+	for i := 0; i < 100; i++ {
+		schedules[i] = UserSchedule{
+			UserID: fmt.Sprintf("u%d", i),
+			Slots: []OccupiedSlot{
+				{DayOfWeek: 1, StartMinutes: 480, EndMinutes: 575},
+				{DayOfWeek: 3, StartMinutes: 595, EndMinutes: 690},
+			},
+		}
+	}
+	cfg := DefaultConfig()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		results := CalculateFreeSlots(schedules, cfg)
+		_ = FillTotalCount(results, len(schedules))
+	}
 }

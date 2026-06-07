@@ -35,6 +35,14 @@ func main() {
 	if err != nil {
 		log.Fatal("数据库初始化失败", zap.Error(err))
 	}
+
+	// 3.5 初始化 Redis 缓存
+	rdb, err := database.InitRedis(cfg.Redis, log)
+	if err != nil {
+		log.Warn("Redis 初始化失败，缓存功能将禁用", zap.Error(err))
+		rdb = nil
+	}
+
 	// 4. 初始化 Gin 引擎
 	if cfg.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -43,7 +51,7 @@ func main() {
 	r.Use(gin.Recovery())
 
 	// 5. 注册路由
-	v1.RegisterRoutes(r, cfg, log, db)
+	v1.RegisterRoutes(r, cfg, log, db, rdb)
 
 	// 6. 启动服务器
 	addr := fmt.Sprintf("%s:%d", cfg.App.Host, cfg.App.Port)

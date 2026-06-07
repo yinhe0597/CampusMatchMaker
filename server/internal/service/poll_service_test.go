@@ -313,7 +313,7 @@ func newTestPollService() (*PollService, *mockPollRepo, *mockClassRepo, *mockTTR
 	pollRepo := newMockPollRepo()
 	classRepo := newMockClassRepo()
 	ttRepo := newMockTTRepo()
-	svc := NewPollService(pollRepo, classRepo, ttRepo)
+	svc := NewPollService(pollRepo, classRepo, ttRepo, nil)
 	return svc, pollRepo, classRepo, ttRepo
 }
 

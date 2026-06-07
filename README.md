@@ -2,7 +2,7 @@
 
 > ✨ 让班级协作更简单 · 课表共享 · 时间投票 · 一键对齐
 
-![Version](https://img.shields.io/badge/version-open0.0.2-blue) ![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen)
+![Version](https://img.shields.io/badge/version-open0.0.3-blue) ![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql) ![Redis](https://img.shields.io/badge/Redis-7.0-DC382D?logo=redis) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-55%2B%20passing-brightgreen)
 
 ---
 
@@ -58,7 +58,7 @@ wingo/time_tag_peidui/
 │   │   ├── domain/             #    领域模型 + 仓储 (user/class/timetable/poll)
 │   │   ├── engine/timeslot/    #    ⚙️ 空闲时段计算引擎 (纯函数)
 │   │   ├── handler/            #    HTTP 处理器 + 中间件
-│   │   ├── infra/              #    基础设施 (config/db/logger)
+│   │   ├── infra/              #    基础设施 (config/db/logger/cache/redis)
 │   │   └── service/            #    业务服务层 + DTO
 │   ├── migrations/             #    数据库迁移 SQL
 │   └── pkg/                    #    工具包 (errors/response/utils)
@@ -146,6 +146,7 @@ wingo/time_tag_peidui/
 
 | 版本 | 日期 | 里程碑 |
 |------|------|--------|
+| **open0.0.3** | 2026-06-07 | ⚡ E2E 17 测试全通过 · Redis 缓存层 · 前端多班级聚合 · 性能压测 · DB 迁移修复 |
 | **open0.0.2** | 2026-06-07 | 🧪 单元测试 38 个全覆盖 · 引擎排序 Bug 修复 · auto_recommend 根因定位 |
 | **open0.0.1** | 2026-06-07 | 🚀 阶段一完成：认证+班级+课表+投票 32 API · 代码审查修复 9 项 |
 
@@ -155,8 +156,8 @@ wingo/time_tag_peidui/
 |------|------|:--:|
 | 🏗️ 基础设施 | 脚手架 + 环境 + 文档 + 13 表迁移 | ✅ 100% |
 | 🚀 阶段一 | 认证 + 班级 + 课表 + 投票 (32 API + 23 前端) | ✅ 100% |
-| 🔧 阶段二 | 单元测试 + Bug 修复 + 集成验证 | 🔧 40% |
-| 🚢 阶段三 | 性能优化 + Redis 缓存 + 部署 | 🔲 0% |
+| 🔧 阶段二 | 单元测试 + Bug 修复 + 集成验证 | ✅ 100% |
+| 🚢 阶段三 | E2E 测试 + Redis 缓存 + 性能压测 + 前端聚合 | ✅ 100% |
 
 > 详细进度见 [`docs/06-开发进度.md`](docs/06-开发进度.md) | 开发日志见 [`docs/2026-06-07-开发日志.md`](docs/2026-06-07-开发日志.md)
 

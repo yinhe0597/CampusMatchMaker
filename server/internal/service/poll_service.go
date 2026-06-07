@@ -10,6 +10,7 @@ import (
 	"campus_collab/internal/domain/poll"
 	"campus_collab/internal/domain/timetable"
 	"campus_collab/internal/engine/timeslot"
+	"campus_collab/internal/infra/cache"
 	"campus_collab/internal/service/dto"
 	appErr "campus_collab/pkg/errors"
 )
@@ -19,17 +20,20 @@ type PollService struct {
 	pollRepo  poll.PollRepository
 	classRepo classrepo.ClassRepository
 	ttRepo    timetable.TimetableRepository
+	cache     *cache.Cache
 }
 
 func NewPollService(
 	pollRepo poll.PollRepository,
 	classRepo classrepo.ClassRepository,
 	ttRepo timetable.TimetableRepository,
+	cacheStore *cache.Cache,
 ) *PollService {
 	return &PollService{
 		pollRepo:  pollRepo,
 		classRepo: classRepo,
 		ttRepo:    ttRepo,
+		cache:     cacheStore,
 	}
 }
 
@@ -367,7 +371,12 @@ func (s *PollService) OpenPoll(ctx context.Context, userID, pollID uint) error {
 		return appErr.ErrPollCannotOpen
 	}
 	p.Status = poll.PollStatusOpen
-	return s.pollRepo.UpdatePoll(ctx, p)
+	if err := s.pollRepo.UpdatePoll(ctx, p); err != nil {
+		return err
+	}
+	// 状态变更后清除相关缓存
+	_ = s.cache.Delete(ctx, fmt.Sprintf("poll:results:%d", pollID))
+	return nil
 }
 
 // ClosePoll 关闭投票
@@ -388,6 +397,8 @@ func (s *PollService) ClosePoll(ctx context.Context, userID, pollID uint) error 
 	if err := s.pollRepo.UpdatePoll(ctx, p); err != nil {
 		return appErr.Wrap(1000, "关闭投票失败", err)
 	}
+	// 状态变更后清除相关缓存
+	_ = s.cache.Delete(ctx, fmt.Sprintf("poll:results:%d", pollID))
 	return nil
 }
 
@@ -456,6 +467,8 @@ func (s *PollService) SubmitVote(ctx context.Context, userID, pollID uint, req *
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		s.recalculateResults(ctx, pollID)
+		// 重算后清除结果缓存
+		_ = s.cache.Delete(ctx, fmt.Sprintf("poll:results:%d", pollID))
 	}()
 
 	return &dto.SubmitVoteResult{VotedCount: votedCount}, nil
@@ -476,6 +489,13 @@ func (s *PollService) GetResults(ctx context.Context, userID, pollID uint) (*dto
 		if !ok {
 			return nil, appErr.ErrPollNoAccess
 		}
+	}
+
+	// 尝试从缓存读取
+	cacheKey := fmt.Sprintf("poll:results:%d", pollID)
+	var cached dto.PollResultsResult
+	if err := s.cache.Get(ctx, cacheKey, &cached); err == nil {
+		return &cached, nil
 	}
 
 	if err := s.calculateResults(ctx, pollID); err != nil {
@@ -519,7 +539,10 @@ func (s *PollService) GetResults(ctx context.Context, userID, pollID uint) (*dto
 		})
 	}
 
-	return &dto.PollResultsResult{Items: items}, nil
+	result := &dto.PollResultsResult{Items: items}
+	// 写入缓存（忽略错误）
+	_ = s.cache.Set(ctx, cacheKey, result)
+	return result, nil
 }
 
 // FinalizePoll 确认最终时段
@@ -545,7 +568,12 @@ func (s *PollService) FinalizePoll(ctx context.Context, userID, pollID uint, req
 
 	p.FinalOptionID = &opt.ID
 	p.Status = poll.PollStatusFinalized
-	return s.pollRepo.UpdatePoll(ctx, p)
+	if err := s.pollRepo.UpdatePoll(ctx, p); err != nil {
+		return err
+	}
+	// 状态变更后清除相关缓存
+	_ = s.cache.Delete(ctx, fmt.Sprintf("poll:results:%d", pollID))
+	return nil
 }
 
 // calculateResults 计算投票结果

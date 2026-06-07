@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"campus_collab/internal/domain/classrepo"
+	"campus_collab/internal/infra/cache"
 	"campus_collab/internal/service/dto"
 	appErr "campus_collab/pkg/errors"
 	"campus_collab/pkg/utils"
@@ -21,13 +23,15 @@ type TimetableInheritor interface {
 type ClassService struct {
 	classRepo        classrepo.ClassRepository
 	ttInheritor      TimetableInheritor
+	cache            *cache.Cache
 }
 
 // NewClassService 创建班级服务
-func NewClassService(cr classrepo.ClassRepository, tti TimetableInheritor) *ClassService {
+func NewClassService(cr classrepo.ClassRepository, tti TimetableInheritor, cacheStore *cache.Cache) *ClassService {
 	return &ClassService{
 		classRepo:   cr,
 		ttInheritor: tti,
+		cache:       cacheStore,
 	}
 }
 
@@ -78,6 +82,13 @@ func (s *ClassService) GetClassDetail(ctx context.Context, userID, classID uint)
 		return nil, appErr.ErrNoPermission
 	}
 
+	// 尝试从缓存读取
+	cacheKey := fmt.Sprintf("class:detail:%d", classID)
+	var cached dto.ClassDetailResult
+	if err := s.cache.Get(ctx, cacheKey, &cached); err == nil {
+		return &cached, nil
+	}
+
 	class, err := s.classRepo.GetClassByID(ctx, classID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -95,7 +106,7 @@ func (s *ClassService) GetClassDetail(ctx context.Context, userID, classID uint)
 
 	memberCount, _ := s.classRepo.CountMembers(ctx, classID)
 
-	return &dto.ClassDetailResult{
+	result := &dto.ClassDetailResult{
 		ID:              class.ID,
 		SchoolID:        class.SchoolID,
 		Grade:           class.Grade,
@@ -108,7 +119,10 @@ func (s *ClassService) GetClassDetail(ctx context.Context, userID, classID uint)
 		MemberCount:     memberCount,
 		MyRole:          role,
 		CreatedAt:       class.CreatedAt.Format("2006-01-02 15:04:05"),
-	}, nil
+	}
+	// 写入缓存
+	_ = s.cache.Set(ctx, cacheKey, result)
+	return result, nil
 }
 
 // JoinClass 加入班级（根据 invite_code）

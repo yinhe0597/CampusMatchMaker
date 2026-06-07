@@ -35,6 +35,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <strong>{{ poll.title }}</strong>
+            <span v-if="poll._className" style="font-size: 12px; color: #909399; margin-left: 8px;">{{ poll._className }}</span>
             <div style="font-size: 12px; color: #999; margin-top: 4px;">
               {{ poll.total_options }} 个选项 · {{ poll.voter_count }} 人已投票
             </div>
@@ -99,15 +100,32 @@ async function loadPolls() {
       return
     }
 
-    // 遍历所有班级获取投票（简化：取第一个班级）
-    const firstClass = myClasses[0]
-    const res = await pollStore.fetchPolls('class', firstClass.id, {
-      page: page.value,
-      page_size: pageSize.value,
-    })
-    // 服务端暂未实现 status 筛选，客户端过滤展示，保持后端分页
-    polls.value = res?.polls || []
-    totalCount.value = res?.total_count || 0
+    // 🔥 遍历所有班级获取投票，合并聚合
+    const allPolls = []
+    for (const cls of myClasses) {
+      try {
+        const res = await pollStore.fetchPolls('class', cls.id, {
+          page: 1,
+          page_size: 100, // 每个班级取足够多，前端合并
+        })
+        const classPolls = (res?.polls || []).map(p => ({
+          ...p,
+          _className: cls.name,
+        }))
+        allPolls.push(...classPolls)
+      } catch (e) {
+        // 单个班级失败不阻塞其他班级
+        console.warn(`获取班级 ${cls.name}(${cls.id}) 投票失败:`, e)
+      }
+    }
+
+    // 按创建时间降序排序
+    allPolls.sort((a, b) => new Date(b.CreatedAt || 0) - new Date(a.CreatedAt || 0))
+
+    // 服务端暂未实现 status 筛选，客户端过滤展示
+    totalCount.value = allPolls.length
+    const start = (page.value - 1) * pageSize.value
+    polls.value = allPolls.slice(start, start + pageSize.value)
   } catch (e) {
     polls.value = []
     totalCount.value = 0

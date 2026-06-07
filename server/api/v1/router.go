@@ -9,17 +9,19 @@ import (
 	"campus_collab/internal/domain/user"
 	"campus_collab/internal/handler"
 	"campus_collab/internal/handler/middleware"
+	"campus_collab/internal/infra/cache"
 	"campus_collab/internal/infra/config"
 	"campus_collab/internal/service"
 	"campus_collab/pkg/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 // RegisterRoutes 注册所有 v1 路由
-func RegisterRoutes(r *gin.Engine, cfg *config.Config, log *zap.Logger, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, cfg *config.Config, log *zap.Logger, db *gorm.DB, rdb *redis.Client) {
 	// 全局中间件
 	r.Use(middleware.CORS(cfg.CORS.Origins))
 	r.Use(RequestIDMiddleware())
@@ -42,11 +44,15 @@ func RegisterRoutes(r *gin.Engine, cfg *config.Config, log *zap.Logger, db *gorm
 	// 课表模块（需先创建以便注入 ClassService）
 	ttRepo := timetable.NewTimetableRepository(db)
 	ttService := service.NewTimetableService(ttRepo, classRepo)
+
+	// Redis 缓存层
+	cacheStore := cache.NewCache(rdb, 5*time.Minute)
+
 	pollRepo := poll.NewPollRepository(db)
-	pollService := service.NewPollService(pollRepo, classRepo, ttRepo)
+	pollService := service.NewPollService(pollRepo, classRepo, ttRepo, cacheStore)
 	pollHandler := handler.NewPollHandler(pollService)
 
-	classService := service.NewClassService(classRepo, ttService)
+	classService := service.NewClassService(classRepo, ttService, cacheStore)
 	classHandler := handler.NewClassHandler(classService)
 	ttHandler := handler.NewTimetableHandler(ttService)
 
