@@ -72,10 +72,10 @@ func CalculateFreeSlots(schedules []UserSchedule, cfg EngineConfig) []FreeSlotRe
 	// 合并连续且参与人数相同的槽位
 	merged_results := mergeConsecutiveSlots(rawSlots, granularity, cfg.DayStartMinutes)
 
-	// 按参与率降序排序
+	// 按参与人数降序排序（等价于按 Rate 降序，因为 TotalCount 统一填充）
 	sort.Slice(merged_results, func(i, j int) bool {
-		if merged_results[i].Rate != merged_results[j].Rate {
-			return merged_results[i].Rate > merged_results[j].Rate
+		if merged_results[i].AvailableCount != merged_results[j].AvailableCount {
+			return merged_results[i].AvailableCount > merged_results[j].AvailableCount
 		}
 		return merged_results[i].DayOfWeek < merged_results[j].DayOfWeek
 	})
