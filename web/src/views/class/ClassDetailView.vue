@@ -93,7 +93,30 @@
             </el-empty>
           </el-tab-pane>
           <el-tab-pane label="投票列表" name="polls">
-            <el-empty description="投票功能尚未实现" />
+            <div v-if="pollLoading" style="text-align: center; padding: 20px;">
+              <el-icon class="is-loading" :size="24"><Loading /></el-icon>
+            </div>
+            <el-empty v-else-if="classPolls.length === 0" description="暂无投票" />
+            <template v-else>
+              <el-card
+                v-for="poll in classPolls"
+                :key="poll.id"
+                style="margin-bottom: 8px; cursor: pointer;"
+                @click="$router.push(`/polls/${poll.id}`)"
+              >
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <strong>{{ poll.title }}</strong>
+                    <div style="font-size: 12px; color: #999; margin-top: 2px;">
+                      {{ poll.total_options }} 个选项 · {{ poll.voter_count }} 人已投票
+                    </div>
+                  </div>
+                  <el-tag :type="pollStatusType(poll.status)" size="small">
+                    {{ pollStatusLabel(poll.status) }}
+                  </el-tag>
+                </div>
+              </el-card>
+            </template>
           </el-tab-pane>
         </el-tabs>
       </el-card>
@@ -109,16 +132,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import { useClassStore } from '@/stores/class'
 import { useUserStore } from '@/stores/user'
+import { usePollStore } from '@/stores/poll'
 
 const route = useRoute()
 const router = useRouter()
 const classStore = useClassStore()
 const userStore = useUserStore()
+const pollStore = usePollStore()
 
 const loading = ref(true)
 const memberLoading = ref(false)
@@ -127,6 +153,38 @@ const memberPage = ref(1)
 const memberTotal = ref(0)
 
 const detail = computed(() => classStore.currentClass)
+
+// 投票相关
+const classPolls = ref([])
+const pollLoading = ref(false)
+
+function pollStatusType(s) {
+  const map = { draft: 'info', open: 'success', closed: 'warning', finalized: 'primary' }
+  return map[s] || 'info'
+}
+function pollStatusLabel(s) {
+  const map = { draft: '草稿', open: '进行中', closed: '已关闭', finalized: '已确认' }
+  return map[s] || s
+}
+
+async function loadClassPolls() {
+  const classId = Number(route.params.id)
+  if (!classId) return
+  pollLoading.value = true
+  try {
+    const res = await pollStore.fetchPolls('class', classId, { page: 1, page_size: 50 })
+    classPolls.value = res?.polls || []
+  } catch {
+    classPolls.value = []
+  } finally {
+    pollLoading.value = false
+  }
+}
+
+// 切换到投票tab时加载
+watch(activeTab, (val) => {
+  if (val === 'polls') loadClassPolls()
+})
 const canManage = computed(() => {
   const role = detail.value?.my_role
   return role === 'owner' || role === 'admin'

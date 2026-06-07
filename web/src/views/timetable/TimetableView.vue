@@ -44,6 +44,7 @@
             class="tg-cell"
             :class="getCellClass(gridData[dayIdx-1]?.[period-1])"
             :style="getCellStyle(gridData[dayIdx-1]?.[period-1])"
+            @click="handleCellClick(gridData[dayIdx-1]?.[period-1])"
           >
             <template v-if="gridData[dayIdx-1]?.[period-1]?.entry">
               <div class="tc-course">{{ gridData[dayIdx-1][period-1].entry.course_name }}</div>
@@ -89,6 +90,12 @@
         <el-form-item label="课程名称" prop="course_name">
           <el-input v-model="addForm.course_name" placeholder="如：英语选修" maxlength="50" />
         </el-form-item>
+        <el-form-item label="教师">
+          <el-input v-model="addForm.teacher" placeholder="（选填）" maxlength="20" />
+        </el-form-item>
+        <el-form-item label="教室">
+          <el-input v-model="addForm.room" placeholder="（选填）" maxlength="20" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showAddPersonal = false">取消</el-button>
@@ -101,7 +108,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useTimetableStore } from '@/stores/timetable'
 import { useUserStore } from '@/stores/user'
 import { PERIOD_TIMES, DAY_LABELS, getPeriodLabel, getPeriodRowSpan } from '@/utils/time'
@@ -175,6 +182,8 @@ const addForm = reactive({
   period_start: '',
   period_end: '',
   course_name: '',
+  teacher: '',
+  room: '',
 })
 const addRules = {
   day_of_week: [{ required: true, message: '请选择星期', trigger: 'change' }],
@@ -201,6 +210,8 @@ async function handleAddPersonal() {
       period_start: Number(addForm.period_start),
       period_end: Number(addForm.period_end),
       course_name: addForm.course_name,
+      teacher: addForm.teacher || undefined,
+      room: addForm.room || undefined,
     })
     ElMessage.success('添加成功')
     showAddPersonal.value = false
@@ -208,6 +219,8 @@ async function handleAddPersonal() {
     addForm.period_start = ''
     addForm.period_end = ''
     addForm.course_name = ''
+    addForm.teacher = ''
+    addForm.room = ''
   } catch (err) {
     ElMessage.error(err.message)
   } finally {
@@ -220,6 +233,21 @@ function handleEditClassTimetable() {
     name: 'TimetableEdit',
     query: { class_id: classId.value },
   })
+}
+
+async function handleCellClick(cell) {
+  if (!cell || !cell.entry || cell.entry.source !== 'personal') return
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除「${cell.entry.course_name}」吗？`,
+      '删除个人课程',
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+    )
+    await timetableStore.deletePersonalTimetable(cell.entry.id, classId.value)
+    ElMessage.success('已删除')
+  } catch {
+    // 取消操作
+  }
 }
 
 function goBack() {

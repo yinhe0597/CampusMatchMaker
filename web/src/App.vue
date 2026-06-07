@@ -2,10 +2,12 @@
 import { computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useClassStore } from '@/stores/class'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const classStore = useClassStore()
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const nickname = computed(() => userStore.userInfo?.nickname || '')
@@ -14,6 +16,16 @@ const nickname = computed(() => userStore.userInfo?.nickname || '')
 onMounted(() => {
   userStore.init()
 })
+
+async function goToTimetable(e) {
+  e?.preventDefault()
+  await classStore.fetchMyClasses()
+  if (classStore.myClasses.length > 0) {
+    router.push({ name: 'Timetable', query: { class_id: classStore.myClasses[0].id } })
+  } else {
+    router.push({ name: 'ClassList' })
+  }
+}
 
 function handleLogout() {
   userStore.logout()
@@ -44,7 +56,7 @@ function handleLogout() {
         >
           <el-menu-item index="/polls">投票</el-menu-item>
           <el-menu-item index="/classes">班级</el-menu-item>
-          <el-menu-item index="/timetable">课表</el-menu-item>
+          <el-menu-item index="/classes" @click="goToTimetable">课表</el-menu-item>
         </el-menu>
       </div>
 

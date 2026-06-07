@@ -122,10 +122,15 @@ async function loadPolls() {
     // 按创建时间降序排序
     allPolls.sort((a, b) => new Date(b.CreatedAt || 0) - new Date(a.CreatedAt || 0))
 
-    // 服务端暂未实现 status 筛选，客户端过滤展示
-    totalCount.value = allPolls.length
+    // 🔥 按状态筛选（客户端过滤）
+    const filteredPolls = activeTab.value === 'all'
+      ? allPolls
+      : allPolls.filter(p => p.status === activeTab.value)
+
+    // 分页
+    totalCount.value = filteredPolls.length
     const start = (page.value - 1) * pageSize.value
-    polls.value = allPolls.slice(start, start + pageSize.value)
+    polls.value = filteredPolls.slice(start, start + pageSize.value)
   } catch (e) {
     polls.value = []
     totalCount.value = 0

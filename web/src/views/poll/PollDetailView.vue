@@ -22,6 +22,15 @@
         {{ poll.description }}
       </div>
 
+      <el-alert
+        v-if="poll?.status === 'finalized'"
+        title="该投票已确认最终时段，结果已定"
+        type="success"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 12px;"
+      />
+
       <div style="font-size: 13px; color: #999; margin-bottom: 16px;">
         <span>截止时间：{{ poll?.deadline ? formatTime(poll.deadline) : '无' }}</span>
         <span style="margin-left: 16px;">投票人数：{{ poll?.voter_count || 0 }}</span>
@@ -60,7 +69,7 @@
           </div>
 
           <!-- 投票状态：进行中 -->
-          <div v-if="poll?.status === 'open'" class="option-vote">
+          <div v-if="poll?.status === 'open' && polling !== opt.option.id" class="option-vote">
             <el-radio-group
               :model-value="getMyChoice(opt.option.id)"
               size="small"
@@ -70,6 +79,9 @@
               <el-radio-button value="no">不行</el-radio-button>
               <el-radio-button value="maybe">待定</el-radio-button>
             </el-radio-group>
+          </div>
+          <div v-else-if="poll?.status === 'open' && polling === opt.option.id" class="option-vote">
+            <el-button size="small" loading>投票中...</el-button>
           </div>
 
           <!-- 投票结果：已关闭/已确认 -->
@@ -125,6 +137,7 @@ const userStore = useUserStore()
 
 const poll = ref(null)
 const loading = ref(false)
+const polling = ref(null) // 正在投票的选项ID
 
 const isCreator = computed(() => poll.value?.creator_user_id === userStore.userInfo?.id)
 
@@ -188,6 +201,7 @@ async function handleClose() {
 }
 
 async function handleVote(optionId, choice) {
+  polling.value = optionId
   try {
     const votes = (pollStore.myVotes || [])
       .filter((v) => v.option_id !== optionId)
@@ -203,6 +217,8 @@ async function handleVote(optionId, choice) {
     await loadDetail()
   } catch (e) {
     ElMessage.error(e.message || '投票失败')
+  } finally {
+    polling.value = null
   }
 }
 
