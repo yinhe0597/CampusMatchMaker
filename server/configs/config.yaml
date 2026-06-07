@@ -1,0 +1,37 @@
+app:
+  name: campus_collab
+  env: development
+  port: 8080
+  host: 0.0.0.0
+
+database:
+  host: localhost
+  port: 3306
+  name: campus_collab
+  user: root
+  password: "123456"
+  max_idle_conns: 10
+  max_open_conns: 100
+
+jwt:
+  secret: dev-secret-key-change-in-production-32chars!!
+  expire_hours: 24
+  refresh_hours: 168
+
+encrypt:
+  key: dev-aes-key-32bytes-change-me-now!!
+
+redis:
+  enabled: true
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+
+log:
+  level: debug
+  format: console
+
+cors:
+  origins:
+    - http://localhost:5173

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS student_auth;
+DROP TABLE IF EXISTS users;
