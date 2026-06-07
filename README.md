@@ -2,7 +2,7 @@
 
 > ✨ 让班级协作更简单 · 课表共享 · 时间投票 · 一键对齐
 
-![Version](https://img.shields.io/badge/version-open0.0.1-blue) ![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql) ![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/version-open0.0.2-blue) ![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go) ![Vue](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js) ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql) ![License](https://img.shields.io/badge/license-MIT-green) ![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen)
 
 ---
 
@@ -142,16 +142,23 @@ wingo/time_tag_peidui/
 
 ---
 
-## 📊 开发进度
+## 📊 版本历史
 
-| 阶段 | 内容 | 状态 |
+| 版本 | 日期 | 里程碑 |
+|------|------|--------|
+| **open0.0.2** | 2026-06-07 | 🧪 单元测试 38 个全覆盖 · 引擎排序 Bug 修复 · auto_recommend 根因定位 |
+| **open0.0.1** | 2026-06-07 | 🚀 阶段一完成：认证+班级+课表+投票 32 API · 代码审查修复 9 项 |
+
+### 📈 开发阶段
+
+| 阶段 | 内容 | 进度 |
 |------|------|:--:|
-| 🏗️ 基础设施 | 脚手架 + 环境 + 文档 | ✅ |
-| 🚀 阶段一 | 认证 + 班级 + 课表 + 投票 | ✅ |
-| 🔧 阶段二 | 集成验证 + 前端联调 | 🔧 |
-| 🚢 阶段三 | 性能优化 + 部署 | 🔲 |
+| 🏗️ 基础设施 | 脚手架 + 环境 + 文档 + 13 表迁移 | ✅ 100% |
+| 🚀 阶段一 | 认证 + 班级 + 课表 + 投票 (32 API + 23 前端) | ✅ 100% |
+| 🔧 阶段二 | 单元测试 + Bug 修复 + 集成验证 | 🔧 40% |
+| 🚢 阶段三 | 性能优化 + Redis 缓存 + 部署 | 🔲 0% |
 
-> 当前版本: **open0.0.1** | 详见 [`docs/06-开发进度.md`](docs/06-开发进度.md)
+> 详细进度见 [`docs/06-开发进度.md`](docs/06-开发进度.md) | 开发日志见 [`docs/2026-06-07-开发日志.md`](docs/2026-06-07-开发日志.md)
 
 ---
 
