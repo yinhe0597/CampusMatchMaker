@@ -15,6 +15,9 @@ RUN pnpm build
 # ===== 运行阶段 =====
 FROM nginx:1.27-alpine
 
+# 安装 curl（供 HEALTHCHECK 使用）
+RUN apk --no-cache add curl
+
 # 复制构建产物
 COPY --from=builder /app/dist /usr/share/nginx/html
 
@@ -24,6 +27,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://localhost:80/ || exit 1
+  CMD curl -sf http://localhost:80/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

@@ -26,6 +26,6 @@ COPY migrations/ ./migrations/
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD curl -s http://localhost:8080/ > /dev/null || exit 1
+  CMD curl -sf http://localhost:8080/api/v1/health || exit 1
 
 CMD ["./server"]

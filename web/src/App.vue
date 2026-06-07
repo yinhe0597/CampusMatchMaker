@@ -17,14 +17,21 @@ onMounted(() => {
   userStore.init()
 })
 
-async function goToTimetable(e) {
-  e?.preventDefault()
-  await classStore.fetchMyClasses()
+async function goToTimetable() {
+  try {
+    await classStore.fetchMyClasses()
+  } catch {
+    // fetchMyClasses 失败时降级跳转
+  }
   if (classStore.myClasses.length > 0) {
     router.push({ name: 'Timetable', query: { class_id: classStore.myClasses[0].id } })
   } else {
     router.push({ name: 'ClassList' })
   }
+}
+
+function navigate(path) {
+  router.push(path)
 }
 
 function handleLogout() {
@@ -51,12 +58,11 @@ function handleLogout() {
         <el-menu
           mode="horizontal"
           :default-active="route.path"
-          router
           :ellipsis="false"
         >
-          <el-menu-item index="/polls">投票</el-menu-item>
-          <el-menu-item index="/classes">班级</el-menu-item>
-          <el-menu-item index="/classes" @click="goToTimetable">课表</el-menu-item>
+          <el-menu-item index="/polls" @click="navigate('/polls')">投票</el-menu-item>
+          <el-menu-item index="/classes" @click="navigate('/classes')">班级</el-menu-item>
+          <el-menu-item index="/timetable" @click="goToTimetable">课表</el-menu-item>
         </el-menu>
       </div>
 

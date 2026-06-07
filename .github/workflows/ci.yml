@@ -60,6 +60,9 @@ jobs:
         run: go build ./...
 
       - name: Run tests
+        env:
+          DB_PASSWORD: test123
+          REDIS_HOST: localhost
         run: go test ./... -v -count=1
 
       - name: Run benchmarks
