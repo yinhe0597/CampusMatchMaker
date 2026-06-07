@@ -12,7 +12,7 @@
 
 <div align="center">
 
-## 🌐 Language · 語言
+**English** &nbsp;|&nbsp; **简体中文** &nbsp;|&nbsp; **繁體中文**
 
 </div>
 
